@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Cetrekan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+(function(){var t=null;try{t=localStorage.getItem('ctk.theme')}catch(e){}
+if(!t)t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+document.documentElement.dataset.theme=t;})();
+</script>
+<style>
+:root{--bg:#e6ebf0;--surface:#f6f8fa;--ink:#16202a;--muted:#5e6b78;--line:#cbd3db;--amber:#f2a20c;--glow:rgba(242,162,12,.3);--ok:#1f8a5b;--bad:#c2412d;--plate:#dce2e8;--p1:#fff;--p2:#e8ecf0;--shadow:rgba(22,32,42,.22);color-scheme:light}
+:root[data-theme=dark]{--bg:#0d131a;--surface:#151d26;--ink:#e8edf2;--muted:#8a97a4;--line:#26313c;--amber:#f5b031;--glow:rgba(245,176,49,.22);--ok:#3fbf88;--bad:#ef6a55;--plate:#0f161d;--p1:#2a3541;--p2:#1c2530;--shadow:rgba(0,0,0,.55);color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;min-height:100svh;background:var(--bg);color:var(--ink);font:400 15px/1.5 'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;font-variant-numeric:tabular-nums}
+.wrap{max-width:1080px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 20px max(32px,env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 0 22px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;font-size:1.25rem;font-weight:800;letter-spacing:-.02em}
+.mark{width:30px;height:30px;border-radius:9px;background:var(--ink);color:var(--bg);display:grid;place-items:center}
+.mark svg{width:18px;height:18px}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:.82rem;font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.chip[data-s=ok] .dot{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+.chip[data-s=bad] .dot{background:var(--bad)}
+.chip[data-s=wait] .dot{background:var(--amber);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.3}}
+.ib{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:grid;place-items:center}
+.ib svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.ib:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.banner{display:none;margin:0 0 16px;padding:10px 14px;border:1px solid color-mix(in srgb,var(--bad) 40%,transparent);border-radius:12px;background:color-mix(in srgb,var(--bad) 10%,transparent);color:var(--bad);font-weight:600;font-size:.9rem}
+.banner.show{display:block}
+main{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:820px){main{grid-template-columns:1fr}}
+
+.hero{position:relative;isolation:isolate;overflow:hidden;padding:30px 24px 26px;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:26px}
+.hero::before{content:"";position:absolute;z-index:-1;left:-10%;right:-10%;top:12%;height:62%;background:radial-gradient(closest-side,var(--glow),transparent);opacity:0;transition:opacity .6s}
+.hero[data-on=true]::before{opacity:1}
+.hero h1{margin:0;font-size:.95rem;font-weight:600;color:var(--muted)}
+.st{margin:2px 0 26px;font-size:2.5rem;line-height:1.15;font-weight:800;letter-spacing:-.03em}
+.plate{width:190px;height:290px;margin:0 auto;padding:14px;border-radius:28px;background:var(--plate);box-shadow:inset 0 3px 6px var(--shadow);perspective:800px;transition:opacity .3s}
+.paddle{all:unset;box-sizing:border-box;display:block;position:relative;width:100%;height:100%;border-radius:18px;cursor:pointer;background:linear-gradient(180deg,var(--p1),var(--p2));box-shadow:0 14px 24px var(--shadow),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .25s cubic-bezier(.3,1.5,.5,1)}
+.paddle[aria-checked=true]{transform:rotateX(10deg)}
+.paddle[aria-checked=false]{transform:rotateX(-10deg)}
+.paddle[data-p=true]{transform:rotateX(0);animation:pend 1s infinite}
+@keyframes pend{50%{box-shadow:0 14px 24px var(--shadow),0 0 0 7px var(--glow)}}
+.paddle:focus-visible{outline:3px solid var(--ink);outline-offset:5px}
+.led{position:absolute;left:50%;top:26px;width:38px;height:6px;margin-left:-19px;border-radius:3px;background:var(--line);transition:background .3s,box-shadow .3s}
+.paddle[aria-checked=true] .led{background:var(--amber);box-shadow:0 0 16px var(--amber)}
+.lb{position:absolute;left:0;right:0;text-align:center;font-weight:800;font-size:1.3rem;letter-spacing:.02em;color:var(--muted);opacity:.55}
+.lb.on{top:52px}.lb.off{bottom:34px}
+.paddle[aria-checked=true] .on,.paddle[aria-checked=false] .off{opacity:1;color:var(--ink)}
+.hero[data-off=true] .plate{opacity:.45}
+.hero[data-off=true] .paddle{pointer-events:none}
+.msg{min-height:1.5em;margin:22px 0 0;font-weight:600;font-size:.92rem}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:340px;margin:14px auto 0}
+.btn{padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--ink);font:inherit;font-weight:700;cursor:pointer;transition:transform .1s}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn.pri{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.note{max-width:36ch;margin:16px auto 0;font-size:.78rem;color:var(--muted)}
+
+.col{display:grid;gap:20px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border:1px solid var(--line);border-radius:20px}
+.stat{padding:16px;min-width:0}
+.stat+.stat{border-left:1px solid var(--line)}
+.stat b{display:block;font-size:1.2rem;font-weight:800;letter-spacing:-.02em;overflow-wrap:anywhere}
+.stat small{display:block;margin-top:2px;color:var(--muted);font-size:.76rem;line-height:1.3}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.ph h2{margin:0;font-size:1rem;font-weight:700}
+.ph button{border:0;background:none;color:var(--muted);font:inherit;font-size:.85rem;font-weight:600;cursor:pointer}
+.log{list-style:none;margin:0;padding:0;max-height:380px;overflow:auto}
+.log li{position:relative;display:grid;grid-template-columns:62px 1fr;gap:8px;padding:10px 16px 10px 30px;font-size:.88rem}
+.log li+li{border-top:1px solid var(--line)}
+.log li::before{content:"";position:absolute;left:14px;top:17px;width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.log li[data-k=ok]::before{background:var(--ok)}
+.log li[data-k=bad]::before{background:var(--bad)}
+.log li[data-k=cmd]::before{background:var(--amber)}
+.log time{color:var(--muted)}
+.log .empty{display:block;padding:28px 16px;text-align:center;color:var(--muted)}
+.log .empty::before{display:none}
+
+dialog{width:min(92vw,440px);padding:24px;border:1px solid var(--line);border-radius:22px;background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(8,12,17,.6)}
+dialog h2{margin:0 0 4px;font-size:1.2rem}
+.hint{margin:0;color:var(--muted);font-size:.85rem}
+label{display:grid;gap:6px;margin-top:14px;font-size:.82rem;font-weight:600}
+input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.acts{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+[hidden]{display:none!important}
+#auth{display:none;position:fixed;inset:0;z-index:10;place-items:center;padding:20px;overflow:auto;background:var(--bg)}
+.locked #auth{display:grid}.locked .wrap{display:none}
+.acard{width:min(100%,400px);padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--surface)}
+.acard h1{margin:22px 0 4px;font-size:1.5rem;letter-spacing:-.02em}
+.err{min-height:1.3em;margin:12px 0;color:var(--bad);font-size:.85rem;font-weight:600}
+.sh{display:flex;align-items:center;gap:14px;margin-bottom:18px}.sh h2{margin:0;font-size:1.4rem;letter-spacing:-.02em}
+.sgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+@media(max-width:820px){.sgrid{grid-template-columns:1fr}}
+.pad{padding:22px}.pad h3{margin:0 0 2px;font-size:1.05rem}
+.res{margin:0 auto 0 0;align-self:center;font-size:.85rem;font-weight:600;color:var(--muted)}
+.res[data-k=ok]{color:var(--ok)}.res[data-k=bad]{color:var(--bad)}
+.sub{margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body class="locked">
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="mark"><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9.5" y="6" width="5" height="6" rx="1.5" fill="currentColor"/></svg></span>Cetrekan</div>
+    <span class="chip" id="cBroker" data-s="off"><i class="dot"></i><span>Broker</span></span>
+    <span class="chip" id="cEsp" data-s="off"><i class="dot"></i><span>ESP32</span></span>
+    <button class="ib" id="bTheme" title="Ganti tema" aria-label="Ganti tema"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16" /></svg></button>
+    <button class="ib" id="bSet" title="Pengaturan koneksi" aria-label="Pengaturan koneksi"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
+  </header>
+
+  <div id="vDash">
+  <div class="banner" id="banner" role="alert"></div>
+
+  <main>
+    <section class="hero" id="hero" data-on="false" data-off="true" aria-label="Kontrol saklar">
+      <h1 id="name">Saklar utama</h1>
+      <p class="st" id="st" aria-live="polite">Belum diketahui</p>
+      <div class="plate">
+        <button class="paddle" id="paddle" role="switch" aria-checked="false" aria-label="Saklar">
+          <span class="led"></span><span class="lb on">ON</span><span class="lb off">OFF</span>
+        </button>
+      </div>
+      <p class="msg" id="msg" aria-live="polite"></p>
+      <div class="seg">
+        <button class="btn pri" id="bOn">Nyalakan</button>
+        <button class="btn" id="bOff">Matikan</button>
+      </div>
+      <p class="note">Status berasal dari perintah terakhir yang diterima ESP32, bukan dari sensor. Jika saklar diubah manual, gunakan tombol Nyalakan atau Matikan untuk menyamakan.</p>
+    </section>
+
+    <div class="col">
+      <section class="stats" aria-label="Ringkasan">
+        <div class="stat"><b id="sCount">0</b><small>Penekanan hari ini</small></div>
+        <div class="stat"><b id="sLat">-</b><small>Waktu respons terakhir</small></div>
+        <div class="stat"><b id="sLast">-</b><small>Perubahan terakhir</small></div>
+      </section>
+      <section class="panel" aria-label="Aktivitas">
+        <div class="ph"><h2>Aktivitas</h2><button id="bClear">Hapus riwayat</button></div>
+        <ul class="log" id="log"></ul>
+      </section>
+    </div>
+  </main>
+  </div>
+
+  <section id="vSet" hidden aria-label="Pengaturan">
+    <div class="sh"><button class="btn" id="bBack" type="button">Kembali</button><h2>Pengaturan</h2></div>
+    <div class="sgrid">
+      <form class="panel pad" id="frm">
+        <h3>Koneksi MQTT</h3>
+        <p class="hint">Perubahan langsung dipakai setelah disimpan. Data dienkripsi dengan password akunmu.</p>
+        <label>Nama perangkat<input name="name" required></label>
+        <label>Host broker<input name="host" placeholder="broker.emqx.io" autocapitalize="off" spellcheck="false" required></label>
+        <div class="two">
+          <label>Port WebSocket (WSS)<input name="port" type="number" required></label>
+          <label>Prefix topik<input name="prefix" autocapitalize="off" required></label>
+        </div>
+        <label>Username broker (opsional)<input name="user" autocomplete="off" autocapitalize="off"></label>
+        <label>Password broker (opsional)<input name="pass" type="password" autocomplete="off"></label>
+        <p class="hint" id="topics" style="margin-top:12px"></p>
+        <div class="acts"><p class="res" id="tRes" role="status"></p><button type="button" class="btn" id="bTest">Uji koneksi</button><button class="btn pri">Simpan</button></div>
+      </form>
+      <form class="panel pad" id="frmAcc">
+        <h3>Akun</h3>
+        <p class="hint">Ubah username atau password login. Kosongkan password baru jika tidak ingin mengganti.</p>
+        <label>Username<input name="user" autocomplete="username" required></label>
+        <label>Password saat ini<input name="old" type="password" autocomplete="current-password" required></label>
+        <label>Password baru<input name="np" type="password" autocomplete="new-password"></label>
+        <div class="acts"><p class="res" id="aRes" role="status"></p><button class="btn pri">Simpan akun</button></div>
+        <div class="sub acts" style="justify-content:space-between">
+          <button type="button" class="btn" id="bOut">Keluar</button>
+          <button type="button" class="btn" id="bReset">Hapus semua data</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<div id="auth">
+  <form id="aForm" class="acard">
+    <div class="brand"><span class="mark"><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9.5" y="6" width="5" height="6" rx="1.5" fill="currentColor"/></svg></span>Cetrekan</div>
+    <h1 id="aTitle">Masuk</h1>
+    <p class="hint" id="aHint"></p>
+    <label>Username<input id="aUser" autocomplete="username" autocapitalize="off" required></label>
+    <label>Password<input id="aPw" type="password" required></label>
+    <label id="aL2">Ulangi password<input id="aPw2" type="password" autocomplete="new-password"></label>
+    <p class="err" id="aErr" role="alert"></p>
+    <button class="btn pri" id="aBtn" style="width:100%">Lanjut</button>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const DEFAULTS = { name: "Saklar utama", host: "", port: 8884, prefix: "cetrekan", user: "", pass: "" };
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+let cfg = { ...DEFAULTS };
+let log = store.get('ctk.log', []);
+let stats = store.get('ctk.stats', { day: '', count: 0, lat: null, last: null });
+let client = null, T = {}, lastErr = '';
+const S = { on: null, esp: null, conn: 'off', pending: null, sentAt: 0, timer: null };
+
+/* ---------- util ---------- */
+function ago(t) {
+  const s = (Date.now() - t) / 1000;
+  if (s < 10) return 'baru saja';
+  if (s < 60) return Math.floor(s) + ' dtk lalu';
+  if (s < 3600) return Math.floor(s / 60) + ' mnt lalu';
+  if (s < 86400) return Math.floor(s / 3600) + ' jam lalu';
+  return new Date(t).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+}
+function resetDay() {
+  const d = new Date().toDateString();
+  if (stats.day !== d) { stats.day = d; stats.count = 0; store.set('ctk.stats', stats); }
+}
+function addLog(type, text) {
+  log.unshift({ t: Date.now(), type, text });
+  log = log.slice(0, 40);
+  store.set('ctk.log', log);
+  renderLog();
+}
+
+/* ---------- render ---------- */
+function renderLog() {
+  const ul = $('#log');
+  ul.textContent = '';
+  if (!log.length) {
+    const li = document.createElement('li');
+    li.className = 'empty';
+    li.textContent = 'Belum ada aktivitas. Tekan tombol untuk memulai.';
+    ul.append(li);
+    return;
+  }
+  for (const e of log) {
+    const li = document.createElement('li');
+    li.dataset.k = e.type;
+    const t = document.createElement('time');
+    t.textContent = new Date(e.t).toLocaleTimeString('en-GB');
+    const p = document.createElement('span');
+    p.textContent = e.text;
+    li.append(t, p);
+    ul.append(li);
+  }
+}
+function renderStats() {
+  resetDay();
+  $('#sCount').textContent = stats.count;
+  $('#sLat').textContent = stats.lat != null ? stats.lat + ' ms' : '-';
+  $('#sLast').textContent = stats.last ? ago(stats.last) : '-';
+}
+function render() {
+  const usable = S.conn === 'on' && S.esp === true;
+  const busy = S.pending !== null;
+  const hero = $('#hero'), paddle = $('#paddle');
+  hero.dataset.on = S.on === true;
+  hero.dataset.off = !usable;
+  paddle.setAttribute('aria-checked', S.on === true);
+  paddle.dataset.p = busy;
+  $('#name').textContent = cfg.name;
+  $('#st').textContent = S.on === null ? 'Belum diketahui' : (S.on ? 'Menyala' : 'Mati');
+  $('#bOn').disabled = !usable || busy;
+  $('#bOff').disabled = !usable || busy;
+
+  let m = 'Siap digunakan.';
+  if (!cfg.host) m = 'Atur koneksi broker terlebih dulu.';
+  else if (S.conn !== 'on') m = 'Menghubungkan ke broker...';
+  else if (S.esp === null) m = 'Menunggu status ESP32...';
+  else if (S.esp === false) m = 'ESP32 sedang offline. Perintah tidak dikirim.';
+  else if (busy) m = 'Menunggu konfirmasi dari ESP32...';
+  $('#msg').textContent = m;
+
+  const b = $('#cBroker'), e = $('#cEsp');
+  b.dataset.s = S.conn === 'on' ? 'ok' : S.conn === 'wait' ? 'wait' : 'bad';
+  b.lastElementChild.textContent = S.conn === 'on' ? 'Broker terhubung' : S.conn === 'wait' ? 'Menghubungkan' : 'Broker terputus';
+  e.dataset.s = S.esp === true ? 'ok' : S.esp === false ? 'bad' : 'off';
+  e.lastElementChild.textContent = S.esp === true ? 'ESP32 online' : S.esp === false ? 'ESP32 offline' : 'ESP32';
+
+  const bn = $('#banner');
+  if (typeof mqtt === 'undefined') {
+    bn.textContent = 'Library MQTT gagal dimuat. Periksa koneksi internet lalu muat ulang halaman.';
+    bn.classList.add('show');
+  } else if (cfg.host && S.conn === 'off') {
+    bn.textContent = 'Tidak terhubung ke broker. Mencoba lagi otomatis. Jika terus gagal, periksa host, port, dan akun di Pengaturan.';
+    bn.classList.add('show');
+  } else {
+    bn.classList.remove('show');
+  }
+  renderStats();
+}
+
+/* ---------- MQTT ---------- */
+function onMsg(topic, payload) {
+  const v = payload.toString();
+  if (topic === T.online) {
+    const ok = v === 'online';
+    if (S.esp !== null && S.esp !== ok) addLog(ok ? 'ok' : 'bad', ok ? 'ESP32 online' : 'ESP32 offline');
+    S.esp = ok;
+  } else if (topic === T.status) {
+    const on = v === '1', prev = S.on;
+    S.on = on;
+    if (S.pending !== null && on === S.pending) {
+      const ms = Date.now() - S.sentAt;
+      clearTimeout(S.timer);
+      S.pending = null;
+      resetDay();
+      stats.lat = ms; stats.count++; stats.last = Date.now();
+      store.set('ctk.stats', stats);
+      addLog('ok', 'ESP32 mengonfirmasi ' + (on ? 'ON' : 'OFF') + ' (' + ms + ' ms)');
+    } else if (prev === null) {
+      addLog('info', 'Status terakhir: ' + (on ? 'ON' : 'OFF'));
+    } else if (prev !== on) {
+      stats.last = Date.now(); store.set('ctk.stats', stats);
+      addLog('info', 'Status berubah menjadi ' + (on ? 'ON' : 'OFF'));
+    }
+  }
+  render();
+}
+
+function connect() {
+  if (client) { try { client.end(true); } catch (e) {} client = null; }
+  clearTimeout(S.timer);
+  Object.assign(S, { on: null, esp: null, conn: 'off', pending: null });
+  render();
+  if (!cfg.host) { openSettings(); return; }
+  if (typeof mqtt === 'undefined') return;
+
+  T = { cmd: cfg.prefix + '/cmd', status: cfg.prefix + '/status', online: cfg.prefix + '/online' };
+  S.conn = 'wait';
+  render();
+
+  client = mqtt.connect('wss://' + cfg.host + ':' + cfg.port + '/mqtt', {
+    username: cfg.user || undefined, password: cfg.pass || undefined,
+    clientId: 'web-' + Math.random().toString(16).slice(2, 10),
+    reconnectPeriod: 3000, connectTimeout: 8000
+  });
+  client.on('connect', () => {
+    S.conn = 'on'; lastErr = '';
+    client.subscribe([T.status, T.online], { qos: 1 });
+    addLog('info', 'Terhubung ke broker');
+    render();
+  });
+  client.on('reconnect', () => { S.conn = 'wait'; render(); });
+  client.on('close', () => {
+    if (S.conn === 'on') addLog('bad', 'Koneksi ke broker terputus');
+    S.conn = 'off'; S.esp = null; S.pending = null; clearTimeout(S.timer);
+    render();
+  });
+  client.on('error', e => {
+    const m = (e && e.message) || String(e);
+    if (m !== lastErr) { lastErr = m; addLog('bad', 'Kesalahan koneksi: ' + m); }
+  });
+  client.on('message', onMsg);
+}
+
+function send(on) {
+  if (!(S.conn === 'on' && S.esp === true) || S.pending !== null) return;
+  S.pending = on;
+  S.sentAt = Date.now();
+  client.publish(T.cmd, on ? '1' : '0', { qos: 1 });
+  addLog('cmd', 'Perintah ' + (on ? 'ON' : 'OFF') + ' dikirim');
+  if (navigator.vibrate) navigator.vibrate(15);
+  S.timer = setTimeout(() => {
+    S.pending = null;
+    addLog('bad', 'ESP32 tidak mengonfirmasi dalam 5 detik');
+    render();
+  }, 5000);
+  render();
+}
+
+/* ---------- vault & login ---------- */
+const enc = new TextEncoder(), dec = new TextDecoder();
+const b64 = u => btoa(String.fromCharCode(...u)), unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+let V = null, fails = 0;
+async function deriveKey(pw, salt) {
+  const m = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 250000, hash: 'SHA-256' }, m, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function seal() {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, V.key, enc.encode(JSON.stringify(cfg))));
+  store.set('ctk.vault', { user: V.user, salt: V.salt, iv: b64(iv), data: b64(ct) });
+}
+async function openVault(v, pw) {
+  const key = await deriveKey(pw, unb64(v.salt));
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(v.iv) }, key, unb64(v.data));
+  return { key, cfg: JSON.parse(dec.decode(pt)) };
+}
+function initAuth() {
+  const v = store.get('ctk.vault', null);
+  $('#aTitle').textContent = v ? 'Masuk' : 'Buat akun';
+  $('#aHint').textContent = v ? 'Masukkan akun untuk membuka dashboard.' : 'Buat akun untuk mengunci pengaturan MQTT. Password dipakai mengenkripsi data di browser ini, jadi jangan sampai lupa.';
+  $('#aL2').hidden = !!v;
+  $('#aPw2').required = !v;
+  $('#aPw').autocomplete = v ? 'current-password' : 'new-password';
+}
+$('#aForm').onsubmit = async ev => {
+  ev.preventDefault();
+  const err = $('#aErr'), btn = $('#aBtn'), u = $('#aUser').value.trim(), p = $('#aPw').value;
+  const v = store.get('ctk.vault', null);
+  err.textContent = '';
+  if (!(window.crypto && crypto.subtle)) { err.textContent = 'Halaman harus dibuka lewat HTTPS.'; return; }
+  if (!v) {
+    if (p.length < 6) { err.textContent = 'Password minimal 6 karakter.'; return; }
+    if (p !== $('#aPw2').value) { err.textContent = 'Ulangi password tidak sama.'; return; }
+  }
+  btn.disabled = true;
+  try {
+    if (v) {
+      const r = await openVault(v, p);
+      if (u !== v.user) throw new Error('user');
+      cfg = { ...DEFAULTS, ...r.cfg };
+      V = { key: r.key, user: v.user, salt: v.salt };
+    } else {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      cfg = { ...DEFAULTS, ...store.get('ctk.cfg', {}) };
+      V = { key: await deriveKey(p, salt), user: u, salt: b64(salt) };
+      await seal();
+      try { localStorage.removeItem('ctk.cfg'); } catch (e) {}
+    }
+    fails = 0;
+    ev.target.reset();
+    document.body.classList.remove('locked');
+    connect();
+  } catch (e) {
+    fails++;
+    await new Promise(r => setTimeout(r, Math.min(fails, 5) * 1000));
+    err.textContent = 'Username atau password salah.';
+  } finally { btn.disabled = false; }
+};
+
+/* ---------- pengaturan ---------- */
+const frm = $('#frm');
+function readCfg() {
+  const f = frm.elements;
+  return {
+    name: f.name.value.trim(), host: f.host.value.trim().replace(/^wss?:\/\//, '').replace(/[:/].*$/, ''),
+    port: parseInt(f.port.value, 10) || 8884, prefix: f.prefix.value.trim().replace(/\/+$/, ''),
+    user: f.user.value.trim(), pass: f.pass.value
+  };
+}
+function showTopics() {
+  const p = frm.elements.prefix.value.trim().replace(/\/+$/, '');
+  $('#topics').textContent = 'Topik: ' + p + '/cmd, ' + p + '/status, ' + p + '/online. Prefix harus sama dengan PREFIX di firmware ESP32.';
+}
+function openSettings() {
+  for (const k of ['name', 'host', 'port', 'prefix', 'user', 'pass']) frm.elements[k].value = cfg[k];
+  $('#frmAcc').elements.user.value = V ? V.user : '';
+  $('#tRes').textContent = ''; $('#aRes').textContent = '';
+  showTopics();
+  $('#vDash').hidden = true; $('#vSet').hidden = false;
+  scrollTo(0, 0);
+}
+function closeSettings() { $('#vSet').hidden = true; $('#vDash').hidden = false; }
+function testConn(c) {
+  return new Promise(res => {
+    if (typeof mqtt === 'undefined') return res('Library MQTT belum dimuat.');
+    const t = mqtt.connect('wss://' + c.host + ':' + c.port + '/mqtt', {
+      username: c.user || undefined, password: c.pass || undefined,
+      clientId: 'test-' + Math.random().toString(16).slice(2, 8), reconnectPeriod: 0, connectTimeout: 8000
+    });
+    const done = m => { try { t.end(true); } catch (e) {} res(m); };
+    t.on('connect', () => done('ok'));
+    t.on('error', e => done((e && e.message) || 'Gagal terhubung.'));
+    t.on('close', () => done('Tidak bisa terhubung. Periksa host dan port.'));
+    setTimeout(() => done('Waktu habis (8 detik).'), 9000);
+  });
+}
+frm.addEventListener('input', showTopics);
+frm.onsubmit = async ev => {
+  ev.preventDefault();
+  cfg = readCfg();
+  await seal();
+  closeSettings();
+  connect();
+};
+$('#bTest').onclick = async () => {
+  const r = $('#tRes');
+  if (!frm.reportValidity()) return;
+  r.dataset.k = ''; r.textContent = 'Menguji...';
+  const m = await testConn(readCfg());
+  r.dataset.k = m === 'ok' ? 'ok' : 'bad';
+  r.textContent = m === 'ok' ? 'Berhasil terhubung ke broker.' : m;
+};
+$('#frmAcc').onsubmit = async ev => {
+  ev.preventDefault();
+  const f = ev.target.elements, r = $('#aRes');
+  r.dataset.k = 'bad';
+  try { await openVault(store.get('ctk.vault', null), f.old.value); }
+  catch (e) { r.textContent = 'Password saat ini salah.'; return; }
+  const np = f.np.value;
+  if (np && np.length < 6) { r.textContent = 'Password baru minimal 6 karakter.'; return; }
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  V = { key: await deriveKey(np || f.old.value, salt), user: f.user.value.trim() || V.user, salt: b64(salt) };
+  await seal();
+  f.old.value = ''; f.np.value = '';
+  r.dataset.k = 'ok'; r.textContent = 'Akun diperbarui.';
+};
+$('#bSet').onclick = () => $('#vSet').hidden ? openSettings() : closeSettings();
+$('#bBack').onclick = closeSettings;
+$('#bOut').onclick = () => location.reload();
+$('#bReset').onclick = () => {
+  if (!confirm('Hapus akun, pengaturan, dan riwayat di browser ini?')) return;
+  ['ctk.vault', 'ctk.cfg', 'ctk.log', 'ctk.stats'].forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+  location.reload();
+};
+
+/* ---------- aksi ---------- */
+$('#paddle').onclick = () => send(S.on === null ? true : !S.on);
+$('#bOn').onclick = () => send(true);
+$('#bOff').onclick = () => send(false);
+$('#bClear').onclick = () => { log = []; store.set('ctk.log', log); renderLog(); };
+$('#bTheme').onclick = () => {
+  const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('ctk.theme', t); } catch (e) {}
+};
+
+/* ---------- mulai ---------- */
+renderLog();
+initAuth();
+setInterval(renderStats, 30000);
+</script>
+</body>
+</html>
